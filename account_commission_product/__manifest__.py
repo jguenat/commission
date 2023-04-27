@@ -7,8 +7,12 @@
     "category": "Sales Management",
     "website": "https://github.com/OCA/commission",
     "license": "AGPL-3",
-    "depends": ["account_commission"],
+    "depends": ["account_commission", "report_xlsx"],
     "maintainers": ["jguenat"],
-    "data": ["views/product_template_views.xml", "views/product_category_views.xml"],
+    "data": [
+        "views/product_template_views.xml",
+        "views/product_category_views.xml",
+        "report/commission_settlement_report.xml",
+    ],
     "installable": True,
 }
