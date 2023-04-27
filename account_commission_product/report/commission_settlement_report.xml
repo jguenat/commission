@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <record id="action_report_settlement_product_xlsx" model="ir.actions.report">
+        <field name="name">Product report XLSX</field>
+        <field name="model">commission.settlement</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">acc_comm_product.settlement_product_xlsx</field>
+        <field name="report_file">report_settlement_product</field>
+        <field name="binding_model_id" ref="commission.model_commission_settlement" />
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
