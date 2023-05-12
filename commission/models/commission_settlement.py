@@ -4,12 +4,13 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 
-from odoo import api, fields, models
+from odoo import api, fields, models, _
 
 
 class CommissionSettlement(models.Model):
     _name = "commission.settlement"
     _description = "Settlement"
+    _inherit = ['mail.thread', 'mail.activity.mixin']
 
     name = fields.Char()
     total = fields.Float(compute="_compute_total", readonly=True, store=True)
@@ -78,6 +79,15 @@ class CommissionSettlement(models.Model):
 
     def action_cancel(self):
         self.write({"state": "cancel"})
+
+    def _message_get_suggested_recipients(self):
+        recipients = super()._message_get_suggested_recipients()
+        for one in self:
+            if one.agent_id:
+                one._message_add_suggested_recipient(
+                    recipients, partner=one.agent_id, reason=_("Agent")
+                )
+        return recipients
 
 
 class SettlementLine(models.Model):
