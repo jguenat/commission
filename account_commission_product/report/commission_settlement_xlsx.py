@@ -9,8 +9,9 @@ class CommissionSettlementXlsx(models.AbstractModel):
     def generate_xlsx_report(self, workbook, data, settlements):
         for setl in settlements:
             report_name = setl.agent_id.name
+            lang_code = setl.agent_id.lang or self.env.user.lang
             lang = self.env["res.lang"].search(
-                [("code", "=", setl.agent_id.lang)], limit=1
+                [("code", "=", lang_code)], limit=1
             )
             sheet = workbook.add_worksheet(report_name[:31])
             if setl.currency_id.position == "after":
@@ -41,7 +42,9 @@ class CommissionSettlementXlsx(models.AbstractModel):
             sheet.write(row_pos, 1, _("Name"), bold)
             sheet.write(row_pos, 2, _("Barcode"), bold)
             sheet.write(row_pos, 3, _("Quantity"), bold)
-            sheet.write(row_pos, 4, _("Amount"), bold)
+            sheet.write(row_pos, 4, _("Gross Amount"), bold)
+            sheet.write(row_pos, 5, _("Net Amount"), bold)
+            net_total = 0
             for product in products:
                 row_pos += 1
                 lines = setl.line_ids.filtered(
@@ -56,9 +59,17 @@ class CommissionSettlementXlsx(models.AbstractModel):
                 qty = sum(invoice_lines.mapped("invoice_line_id.quantity")) - sum(
                     refund_lines.mapped("invoice_line_id.quantity")
                 )
-                amount = sum(lines.mapped("settled_amount"))
+                gross_amount_invoice = sum(invoice_lines.mapped("invoice_line_id.price_subtotal"))
+                gross_amount_refund = sum(refund_lines.mapped("invoice_line_id.price_subtotal"))
+                gross_amount = gross_amount_invoice - gross_amount_refund
+                net_amount = sum(lines.mapped("settled_amount"))
+                net_total += net_amount
                 sheet.write(row_pos, 0, product.default_code or "", False)
                 sheet.write(row_pos, 1, product.name, False)
                 sheet.write(row_pos, 2, product.barcode or "", False)
                 sheet.write(row_pos, 3, qty, False)
-                sheet.write(row_pos, 4, amount, money_format)
+                sheet.write(row_pos, 4, gross_amount, money_format)
+                sheet.write(row_pos, 5, net_amount, money_format)
+            row_pos += 1
+            sheet.write(row_pos, 4, _("Total"), bold)
+            sheet.write(row_pos, 5, net_total, money_format)
